@@ -364,7 +364,9 @@
     NSString *title = [arguments objectAtIndex:0];
     if (!toolBarTitle) {
         toolBarTitle = [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:self action:@selector(toolBarTitleClicked)];
-    } else {
+		//toolBarTitle = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"toolBarImg.png"] style:UIBarButtonItemStylePlain target:self action:@selector(toolBarTitleClicked)];
+		
+	} else {
         toolBarTitle.title = title;
     }
 
@@ -391,3 +393,4 @@
 }
 
 @end
+
