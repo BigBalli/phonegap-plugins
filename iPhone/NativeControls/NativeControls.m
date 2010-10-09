@@ -1,33 +1,26 @@
 //
-//  NativeControls.h
-//  
+//  UIControls.m
+//  PhoneGap
 //
-//  Created by Jesse MacFadyen on 10-02-03.
-//  MIT Licensed
-
-//  Originally this code was developed my Michael Nachbaur
-//  Formerly -> PhoneGap :: UIControls.h
 //  Created by Michael Nachbaur on 13/04/09.
 //  Copyright 2009 Decaf Ninja Software. All rights reserved.
+//
 
-#import "NativeControls.h"
+#import "UIControls.h"
 
-
-@implementation NativeControls
+@implementation UIControls
 #ifndef __IPHONE_3_0
 @synthesize webView;
 #endif
 
 -(PhoneGapCommand*) initWithWebView:(UIWebView*)theWebView
 {
-    self = (NativeControls*)[super initWithWebView:theWebView];
-    if (self) 
-	{
+    self = (UIControls*)[super initWithWebView:theWebView];
+    if (self) {
         tabBarItems = [[NSMutableDictionary alloc] initWithCapacity:5];
     }
     return self;
 }
-
 
 /**
  * Create a native tab bar at either the top or the bottom of the display.
@@ -44,7 +37,7 @@
     tabBar.autoresizesSubviews    = YES;
     tabBar.hidden                 = YES;
     tabBar.userInteractionEnabled = YES;
-
+	
 	[self.webView.superview addSubview:tabBar];    
 }
 
@@ -60,7 +53,7 @@
 {
     if (!tabBar)
         [self createTabBar:nil withDict:nil];
-
+	
     CGFloat height = 49.0f;
     BOOL atBottom = YES;
     
@@ -70,40 +63,80 @@
         atBottom = [[tabSettings objectForKey:@"position"] isEqualToString:@"bottom"];
     }
     tabBar.hidden = NO;
-
-     CGRect webViewBounds = originalWebViewBounds = webView.bounds;
 	
-     CGRect tabBarBounds;
-     if (atBottom) {
-         tabBarBounds = CGRectMake(
-             webViewBounds.origin.x,
-             webViewBounds.origin.y + webViewBounds.size.height - height,
-             webViewBounds.size.width,
-             height
-         );
-         webViewBounds = CGRectMake(
-            webViewBounds.origin.x,
-            webViewBounds.origin.y,
-            webViewBounds.size.width,
-            webViewBounds.size.height - height
-         );
-     } else {
-         tabBarBounds = CGRectMake(
-             webViewBounds.origin.x,
-             webViewBounds.origin.y,
-             webViewBounds.size.width,
-             height
-         );
-         webViewBounds = CGRectMake(
-            webViewBounds.origin.x,
-            webViewBounds.origin.y + height,
-            webViewBounds.size.width,
-            webViewBounds.size.height - height
-         );
-     }
-     
+	CGRect webViewBounds = originalWebViewBounds = webView.bounds;
+	
+	CGRect tabBarBounds;
+	if (atBottom) {
+		tabBarBounds = CGRectMake(
+								  webViewBounds.origin.x,
+								  webViewBounds.origin.y + webViewBounds.size.height - height-20,
+								  webViewBounds.size.width,
+								  height
+								  );
+		
+		webViewBounds = CGRectMake(
+								   webViewBounds.origin.x,
+								   webViewBounds.origin.y,
+								   webViewBounds.size.width,
+								   webViewBounds.size.height - height-20
+								   );
+		
+		
+	} else {
+		tabBarBounds = CGRectMake(
+								  webViewBounds.origin.x,
+								  webViewBounds.origin.y,
+								  webViewBounds.size.width,
+								  height
+								  );
+		webViewBounds = CGRectMake(
+								   webViewBounds.origin.x,
+								   webViewBounds.origin.y + height,
+								   webViewBounds.size.width,
+								   webViewBounds.size.height - height
+								   );
+	}
+	
     [tabBar setFrame:tabBarBounds];
     [webView setFrame:webViewBounds];
+}
+
+/*
+ Update TabBar 
+ Created by Giacomo Balli 04/10/2010
+*/
+- (void)updateTabBar:(NSArray*)arguments withDict:(NSDictionary*)options
+{
+	tabBar.hidden = NO;
+	CGRect tabBarBounds;
+	CGRect webViewBounds;
+	CGRect windowFrame = [ [ UIScreen mainScreen ] bounds ];
+	//NSLog(@"windowFrame: %@",NSStringFromCGRect(windowFrame));
+	UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
+	if (orientation == UIDeviceOrientationLandscapeLeft || orientation ==     UIDeviceOrientationLandscapeRight) 
+	{
+		if(windowFrame.size.width==768) {
+			tabBarBounds = CGRectMake(0,699,1024,49);
+			webViewBounds = CGRectMake(0,0,1024,699); 
+		}
+		else {
+			tabBarBounds = CGRectMake(0,251,480,49);
+			webViewBounds = CGRectMake(0,0,480,251); 
+		}
+	}
+	else {
+		if(windowFrame.size.width==768) {
+			webViewBounds = CGRectMake(0,0,768,955); 
+			tabBarBounds = CGRectMake(0,955,768,49);
+		}
+		else {
+			tabBarBounds = CGRectMake(0,411,320,49);
+			webViewBounds = CGRectMake(0,0,320,411); 
+		}
+	}
+	[tabBar setFrame:tabBarBounds];
+	[webView setFrame:webViewBounds];
 }
 
 /**
@@ -151,12 +184,12 @@
 {
     if (!tabBar)
         [self createTabBar:nil withDict:nil];
-
+	
     NSString  *name      = [arguments objectAtIndex:0];
     NSString  *title     = [arguments objectAtIndex:1];
     NSString  *imageName = [arguments objectAtIndex:2];
     int tag              = [[arguments objectAtIndex:3] intValue];
-
+	
     UITabBarItem *item = nil;    
     if ([imageName length] > 0) {
         UIBarButtonSystemItem systemItem = -1;
@@ -180,14 +213,13 @@
         NSLog(@"Creating with custom image and title");
         item = [[UITabBarItem alloc] initWithTitle:title image:[UIImage imageNamed:imageName] tag:tag];
     }
-
+	
     if ([options objectForKey:@"badge"])
         item.badgeValue = [options objectForKey:@"badge"];
     
     [tabBarItems setObject:item forKey:name];
 	[item release];
 }
-
 
 /**
  * Update an existing tab bar item to change its badge value.
@@ -201,13 +233,12 @@
 {
     if (!tabBar)
         [self createTabBar:nil withDict:nil];
-
+	
     NSString  *name = [arguments objectAtIndex:0];
     UITabBarItem *item = [tabBarItems objectForKey:name];
     if (item)
         item.badgeValue = [options objectForKey:@"badge"];
 }
-
 
 /**
  * Show previously created items on the tab bar
@@ -250,7 +281,7 @@
 {
     if (!tabBar)
         [self createTabBar:nil withDict:nil];
-
+	
     NSString *itemName = [arguments objectAtIndex:0];
     UITabBarItem *item = [tabBarItems objectForKey:itemName];
     if (item)
@@ -259,6 +290,79 @@
         tabBar.selectedItem = nil;
 }
 
+/*
+ * - <b>Tool Buttons</b>
+ *   - toolButton:Done
+ *   - toolButton:Cancel
+ *   - toolButton:Edit
+ *   - toolButton:Save
+ *   - toolButton:Add
+ *   - toolButton:FlexibleSpace
+ *   - toolButton:FixedSpace
+ *   - toolButton:Compose
+ *   - toolButton:Reply
+ *   - toolButton:Action
+ *   - toolButton:Organize
+ *   - toolButton:Bookmarks
+ *   - toolButton:Search
+ *   - toolButton:Refresh
+ *   - toolButton:Stop
+ *   - toolButton:Camera
+ *   - toolButton:Trash
+ *   - toolButton:Play
+ *   - toolButton:Pause
+ *   - toolButton:Rewind
+ *   - toolButton:FastForward
+ */
+/*
+ -(UIBarButtonSystemItem) getSystemItemFromString:(NSString*)imageName
+ {
+ if ([[imageName substringWithRange:NSMakeRange(0, 10)] isEqualTo:@"tabButton:"]) {
+ NSLog(@"Tab button!!");
+ if ([imageName isEqualTo:@"tabButton:More"])       return UITabBarSystemItemMore;
+ if ([imageName isEqualTo:@"tabButton:Favorites"])  return UITabBarSystemItemFavorites;
+ if ([imageName isEqualTo:@"tabButton:Featured"])   return UITabBarSystemItemFeatured;
+ if ([imageName isEqualTo:@"tabButton:TopRated"])   return UITabBarSystemItemTopRated;
+ if ([imageName isEqualTo:@"tabButton:Recents"])    return UITabBarSystemItemRecents;
+ if ([imageName isEqualTo:@"tabButton:Contacts"])   return UITabBarSystemItemContacts;
+ if ([imageName isEqualTo:@"tabButton:History"])    return UITabBarSystemItemHistory;
+ if ([imageName isEqualTo:@"tabButton:Bookmarks"])  return UITabBarSystemItemBookmarks;
+ if ([imageName isEqualTo:@"tabButton:Search"])     return UITabBarSystemItemSearch;
+ if ([imageName isEqualTo:@"tabButton:Downloads"])  return UITabBarSystemItemDownloads;
+ if ([imageName isEqualTo:@"tabButton:MostRecent"]) return UITabBarSystemItemMostRecent;
+ if ([imageName isEqualTo:@"tabButton:MostViewed"]) return UITabBarSystemItemMostViewed;
+ NSLog(@"Couldn't figure out what it was");
+ return -1;
+ }
+ else if ([[imageName substringWithRange:NSMakeRange(0, 11)] isEqualTo:@"toolButton:"]) {
+ NSLog(@"Tool button!!");
+ if ([imageName isEqualTo:@"toolButton:Done"])          return UIBarButtonSystemItemDone;
+ if ([imageName isEqualTo:@"toolButton:Cancel"])        return UIBarButtonSystemItemCancel;
+ if ([imageName isEqualTo:@"toolButton:Edit"])          return UIBarButtonSystemItemEdit;
+ if ([imageName isEqualTo:@"toolButton:Save"])          return UIBarButtonSystemItemSave;
+ if ([imageName isEqualTo:@"toolButton:Add"])           return UIBarButtonSystemItemAdd;
+ if ([imageName isEqualTo:@"toolButton:FlexibleSpace"]) return UIBarButtonSystemItemFlexibleSpace;
+ if ([imageName isEqualTo:@"toolButton:FixedSpace"])    return UIBarButtonSystemItemFixedSpace;
+ if ([imageName isEqualTo:@"toolButton:Compose"])       return UIBarButtonSystemItemCompose;
+ if ([imageName isEqualTo:@"toolButton:Reply"])         return UIBarButtonSystemItemReply;
+ if ([imageName isEqualTo:@"toolButton:Action"])        return UIBarButtonSystemItemAction;
+ if ([imageName isEqualTo:@"toolButton:Organize"])      return UIBarButtonSystemItemOrganize;
+ if ([imageName isEqualTo:@"toolButton:Bookmarks"])     return UIBarButtonSystemItemBookmarks;
+ if ([imageName isEqualTo:@"toolButton:Search"])        return UIBarButtonSystemItemSearch;
+ if ([imageName isEqualTo:@"toolButton:Refresh"])       return UIBarButtonSystemItemRefresh;
+ if ([imageName isEqualTo:@"toolButton:Stop"])          return UIBarButtonSystemItemStop;
+ if ([imageName isEqualTo:@"toolButton:Camera"])        return UIBarButtonSystemItemCamera;
+ if ([imageName isEqualTo:@"toolButton:Trash"])         return UIBarButtonSystemItemTrash;
+ if ([imageName isEqualTo:@"toolButton:Play"])          return UIBarButtonSystemItemPlay;
+ if ([imageName isEqualTo:@"toolButton:Pause"])         return UIBarButtonSystemItemPause;
+ if ([imageName isEqualTo:@"toolButton:Rewind"])        return UIBarButtonSystemItemRewind;
+ if ([imageName isEqualTo:@"toolButton:FastForward"])   return UIBarButtonSystemItemFastForward;
+ return -1;
+ } else {
+ return -1;
+ }
+ }
+ */
 
 - (void)tabBar:(UITabBar *)tabBar didSelectItem:(UITabBarItem *)item
 {
@@ -266,15 +370,13 @@
     [webView stringByEvaluatingJavaScriptFromString:jsCallBack];
 }
 
-
-
 /*********************************************************************************/
 - (void)createToolBar:(NSArray*)arguments withDict:(NSDictionary*)options
 {
     CGFloat height   = 39.0f;
     BOOL atTop       = YES;
     UIBarStyle style = UIBarStyleDefault;
-
+	
     NSDictionary* toolBarSettings = [settings objectForKey:@"ToolBarSettings"];
     if (toolBarSettings) {
         if ([toolBarSettings objectForKey:@"height"])
@@ -292,14 +394,14 @@
         else if ([styleStr isEqualToString:@"BlackTranslucent"])
             style = UIBarStyleBlackTranslucent;
     }
-
+	
     CGRect webViewBounds = webView.bounds;
     CGRect toolBarBounds = CGRectMake(
-                              webViewBounds.origin.x,
-                              webViewBounds.origin.y,
-                              webViewBounds.size.width,
-                              height
-                              );
+									  webViewBounds.origin.x,
+									  webViewBounds.origin.y,
+									  webViewBounds.size.width,
+									  height
+									  );
     webViewBounds = CGRectMake(
                                webViewBounds.origin.x,
                                webViewBounds.origin.y + height,
@@ -313,26 +415,52 @@
     toolBar.autoresizesSubviews    = YES;
     toolBar.userInteractionEnabled = YES;
     toolBar.barStyle               = style;
-
+	
     [toolBar setFrame:toolBarBounds];
     [webView setFrame:webViewBounds];
-
+	
     [self.webView.superview addSubview:toolBar];
 }
 
+/*
+ - (void)createToolBarButton:(NSArray*)arguments withDict:(NSDictionary*)options
+ {
+ }
+ */
+/*
+ - (void)createToolBarItem:(NSArray*)arguments withDict:(NSDictionary*)options
+ {
+ if (!toolBar)
+ [self createToolBar:nil options:nil];
+ 
+ NSString  *name  = [arguments objectAtIndex:0];
+ NSString  *title = [arguments objectAtIndex:1];
+ NSString  *style = [arguments objectAtIndex:2];
+ UIBarButtonItemStyle styleRef = UIBarButtonItemStylePlain;
+ if ([style isEqualTo:@"plain"])
+ styleRef = UIBarButtonItemStylePlain;
+ else if ([style isEqualTo:@"border"])
+ styleRef = UIBarButtonItemStyleBordered;
+ else if ([style isEqualTo:
+ 
+ 
+ UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithTitle:title style:styleRef target:self action:@selector(clickedToolBarTitle)];
+ [toolBarItems setObject:item forKey:name];
+ }
+ */
 
 - (void)setToolBarTitle:(NSArray*)arguments withDict:(NSDictionary*)options
 {
     if (!toolBar)
         [self createToolBar:nil withDict:nil];
-
+	
     NSString *title = [arguments objectAtIndex:0];
     if (!toolBarTitle) {
         toolBarTitle = [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:self action:@selector(toolBarTitleClicked)];
     } else {
         toolBarTitle.title = title;
     }
-
+	
     UIBarButtonItem *space1 = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
     UIBarButtonItem *space2 = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
     NSArray *items = [[NSArray alloc] initWithObjects:space1, toolBarTitle, space2, nil];
